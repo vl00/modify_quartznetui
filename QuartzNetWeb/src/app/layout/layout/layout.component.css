@@ -1,0 +1,16 @@
+.logo {
+    width: 120px;
+    height: 31px;
+    background: rgba(255, 255, 255, .2);
+    margin: 16px 24px 16px 0;
+    float: left;
+    border-radius: 6px;
+    margin: 16px;
+    line-height: 31px;
+    overflow: hidden;
+    text-align: center;
+    color: #fff;
+    font-size: 16px;
+}
+
+10:17 2019/6/11

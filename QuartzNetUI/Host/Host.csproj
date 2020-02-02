@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <__hostType__ Condition="'$(hostType)'!=''">$(hostType)</__hostType__>
+    <__hostType__ Condition="'$(__hostType__)'==''">console</__hostType__>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(__hostType__)'=='console'">
+    <DefineConstants>$(DefineConstants);HostInConsole</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(__hostType__)'=='win'">
+    <!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
+    <DefineConstants>$(DefineConstants);HostInWindowsService</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="File\logs\**" />
+    <Compile Remove="logs\**" />
+    <Content Remove="File\logs\**" />
+    <Content Remove="logs\**" />
+    <EmbeddedResource Remove="File\logs\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <None Remove="File\logs\**" />
+    <None Remove="logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ScheduleManage.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="sqliteScheduler.db" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.60.6" />
+    <PackageReference Include="Dapper.Contrib" Version="1.60.1" />
+    <PackageReference Include="MailKit" Version="2.1.5.1" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="2.2.4" />
+    <PackageReference Include="Quartz" Version="3.0.7" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.0.7" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.4" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
+    <PackageReference Include="Talk.Extensions" Version="1.0.1.43" />
+    <PackageReference Condition="'$(__hostType__)'=='win'" Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Dockerfile">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="tables_sqlite.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(__hostType__)'=='win'">
+    <None Update="installer.win.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
