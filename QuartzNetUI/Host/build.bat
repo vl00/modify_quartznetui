@@ -16,7 +16,9 @@ pause >nul
 goto menu
 
 :build_win
+rd /s/q "obj" 1>nul 2>nul
 set hostType=win
+echo hostType=%hostType%
 dotnet publish -o "bin\publish_win"
 copy /y "..\libs\hostfxr.dll" "bin\publish_win\hostfxr.dll"
 copy /y "..\libs\hostpolicy.dll" "bin\publish_win\hostpolicy.dll"
@@ -26,12 +28,16 @@ del /s/q "bin\publish_win\web.config" 1>nul 2>nul
 goto next
 
 :build_console
+rd /s/q "obj" 1>nul 2>nul
 set hostType=console
+echo hostType=%hostType%
 dotnet publish -o "bin\publish_console"
 goto next
 
 :build_docker
+rd /s/q "obj" 1>nul 2>nul
 set hostType=docker
+echo hostType=%hostType%
 dotnet publish -r linux-x64 -o "bin\publish_linux64"
 goto next
 
