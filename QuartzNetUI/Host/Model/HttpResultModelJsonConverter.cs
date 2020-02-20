@@ -55,22 +55,28 @@ namespace Host.Model
                 var propertyName = reader.Value.ToString();
                 switch (1)
                 {
-                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "status", StringComparison.CurrentCultureIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "issuccess", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "isok", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "succeed", StringComparison.OrdinalIgnoreCase)):
+                        r.IsSuccess = reader.ReadAsBoolean();
+                        return;
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "status", StringComparison.OrdinalIgnoreCase)):
                         {
                             var code = reader.ReadAsInt32();
                             r.IsSuccess = code == 200;
                         }
                         return;
-                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "code", StringComparison.CurrentCultureIgnoreCase)):
-                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "errcode", StringComparison.CurrentCultureIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "code", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "errcode", StringComparison.OrdinalIgnoreCase)):
                         {
                             var code = reader.ReadAsInt32();
                             r.IsSuccess = code == 0;
                         }
                         return;
-                    case 1 when (string.Equals(propertyName, "msg", StringComparison.CurrentCultureIgnoreCase)):
-                    case 1 when (string.Equals(propertyName, "errormsg", StringComparison.CurrentCultureIgnoreCase)):
-                    case 1 when (string.Equals(propertyName, "errmsg", StringComparison.CurrentCultureIgnoreCase)):
+                    case 1 when (string.Equals(propertyName, "msg", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (string.Equals(propertyName, "errormsg", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (string.Equals(propertyName, "errmsg", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (string.Equals(propertyName, "errormessage", StringComparison.OrdinalIgnoreCase)):
                         r.ErrorMsg = reader.ReadAsString();
                         return;
                 }
