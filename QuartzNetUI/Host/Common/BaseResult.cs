@@ -7,6 +7,8 @@ namespace Host
 {
     public class BaseResult
     {
+        public int Status => Code;
+
         public int Code { get; set; } = 200;
         public string Msg { get; set; }
     }

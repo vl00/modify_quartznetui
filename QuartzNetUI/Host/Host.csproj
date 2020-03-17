@@ -51,7 +51,7 @@
     <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
-    <PackageReference Include="Talk.Extensions" Version="1.0.1.43" />
+    <PackageReference Include="Talk.Extensions" Version="1.0.1.43" />    
     <PackageReference Condition="'$(__hostType__)'=='win'" Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.2.0" />
   </ItemGroup>
 

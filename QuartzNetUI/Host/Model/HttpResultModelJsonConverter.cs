@@ -67,7 +67,13 @@ namespace Host.Model
                         }
                         return;
                     case 1 when (r.IsSuccess == null && string.Equals(propertyName, "code", StringComparison.OrdinalIgnoreCase)):
+                        {
+                            var code = reader.ReadAsInt32();
+                            r.IsSuccess = code == 0 || code == 200;
+                        }
+                        return;
                     case 1 when (r.IsSuccess == null && string.Equals(propertyName, "errcode", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "errno", StringComparison.OrdinalIgnoreCase)):
                         {
                             var code = reader.ReadAsInt32();
                             r.IsSuccess = code == 0;

@@ -17,7 +17,7 @@ namespace Host
             WebHost.CreateDefaultBuilder(args)                
                 .UseKestrel()
                 .UseStartup<Startup>()
-                .UseUrls("http://*:52726")
+                .UseUrls("http://*:52726", "https://*:52727")
                 .Build(); 
     }
 }
