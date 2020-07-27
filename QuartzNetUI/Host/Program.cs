@@ -13,11 +13,18 @@ namespace Host
 {
     public partial class Program
     {
-        static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)                
+        static IWebHost BuildWebHost(string[] args)
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            return WebHost.CreateDefaultBuilder(args)
                 .UseKestrel()
+                .UseConfiguration(config)
                 .UseStartup<Startup>()
-                .UseUrls("http://*:52726", "https://*:52727")
-                .Build(); 
+                .UseUrls(config["use-urls"])
+                .Build();
+        }
     }
 }
