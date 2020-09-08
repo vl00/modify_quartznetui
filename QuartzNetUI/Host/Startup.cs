@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 //using Microsoft.Extensions.PlatformAbstractions;
@@ -49,6 +51,18 @@ namespace Host
 #endif
             #endregion
 
+            services.AddHttpClient(string.Empty, (sp, http) =>
+            {
+                http.Timeout = new TimeSpan(0, 2, 0);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => 
+            {
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, certificate2, arg3, arg4) => true
+                };
+            });
+
             services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(@"DataProtection-Keys"));
 
@@ -73,8 +87,16 @@ namespace Host
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
-            applicationLifetime.ApplicationStarted.Register(() => _ = SchedulerCenter.Instance.StartScheduleAsync());
-            applicationLifetime.ApplicationStopping.Register(() => SchedulerCenter.Instance.StopScheduleAsync().Wait());
+            applicationLifetime.ApplicationStarted.Register(o =>
+            {
+                var t = ((Tuple<Startup, IServiceProvider>)o);
+                t.Item1.OnApplicationStarted(t.Item2);
+            }, Tuple.Create(this, app.ApplicationServices), false);
+            applicationLifetime.ApplicationStopping.Register(o =>
+            {
+                var t = ((Tuple<Startup, IServiceProvider>)o);
+                t.Item1.OnApplicationStopping(t.Item2);
+            }, Tuple.Create(this, app.ApplicationServices), false);
 
             if (env.IsDevelopment())
             {
@@ -102,6 +124,23 @@ namespace Host
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "MsSystem API V1");
             });
+        }
+
+        /// <summary>
+        /// on app start
+        /// </summary>
+        private void OnApplicationStarted(IServiceProvider services)
+        {
+            HttpHelper.HttpClientFactory = services.GetService<IHttpClientFactory>();
+            _ = SchedulerCenter.Instance.StartScheduleAsync();
+        }
+
+        /// <summary>
+        /// on app stop
+        /// </summary>
+        private void OnApplicationStopping(IServiceProvider services)
+        {
+            SchedulerCenter.Instance.StopScheduleAsync().Wait();
         }
 
         /// <summary>
