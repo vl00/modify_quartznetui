@@ -15,10 +15,13 @@ namespace Host
     public class HttpHelper
     {
         public static readonly HttpHelper Instance;
+        public static IHttpClientFactory HttpClientFactory;
+
         static HttpHelper()
         {
             Instance = new HttpHelper();
         }
+
         /// <summary>
         /// 不同url分配不同HttpClient
         /// </summary>
@@ -29,8 +32,13 @@ namespace Host
             var uri = new Uri(url);
             var key = uri.Scheme + uri.Host;
             if (!dictionary.Keys.Contains(key))
-                dictionary.Add(key, new HttpClient());
+                dictionary.Add(key, CreateHttpClient());
             return dictionary[key];
+        }
+
+        HttpClient CreateHttpClient()
+        {
+            return HttpClientFactory.CreateClient(string.Empty);
         }
 
         /// <summary>
@@ -50,7 +58,7 @@ namespace Host
             if (headers != null && headers.Any())
             {
                 //如果有headers认证等信息，则每个请求实例一个HttpClient
-                using (HttpClient http = new HttpClient())
+                using (HttpClient http = CreateHttpClient())
                 {
                     foreach (var item in headers)
                     {
@@ -90,7 +98,7 @@ namespace Host
             if (headers != null && headers.Any())
             {
                 //如果有headers认证等信息，则每个请求实例一个HttpClient
-                using (HttpClient http = new HttpClient())
+                using (HttpClient http = CreateHttpClient())
                 {
                     foreach (var item in headers)
                     {
@@ -122,7 +130,7 @@ namespace Host
             if (headers != null && headers.Any())
             {
                 //如果有headers认证等信息，则每个请求实例一个HttpClient
-                using (HttpClient http = new HttpClient())
+                using (HttpClient http = CreateHttpClient())
                 {
                     foreach (var item in headers)
                     {
@@ -162,7 +170,7 @@ namespace Host
             if (headers != null && headers.Any())
             {
                 //如果有headers认证等信息，则每个请求实例一个HttpClient
-                using (HttpClient http = new HttpClient())
+                using (HttpClient http = CreateHttpClient())
                 {
                     foreach (var item in headers)
                     {
