@@ -58,6 +58,7 @@ namespace Host.Model
                     case 1 when (r.IsSuccess == null && string.Equals(propertyName, "issuccess", StringComparison.OrdinalIgnoreCase)):
                     case 1 when (r.IsSuccess == null && string.Equals(propertyName, "isok", StringComparison.OrdinalIgnoreCase)):
                     case 1 when (r.IsSuccess == null && string.Equals(propertyName, "succeed", StringComparison.OrdinalIgnoreCase)):
+                    case 1 when (r.IsSuccess == null && string.Equals(propertyName, "success", StringComparison.OrdinalIgnoreCase)):
                         r.IsSuccess = reader.ReadAsBoolean();
                         return;
                     case 1 when (r.IsSuccess == null && string.Equals(propertyName, "status", StringComparison.OrdinalIgnoreCase)):
