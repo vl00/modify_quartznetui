@@ -2,7 +2,7 @@
 *.pubxml
 
 /QuartzNetUI/Host/wwwroot
-/QuartzNetUI/Host/File
+/QuartzNetUI/Host/DataProtection-Keys
 /QuartzNetUI/Host/File
 /QuartzNetUI/Host/bin
 /QuartzNetUI/Host/obj

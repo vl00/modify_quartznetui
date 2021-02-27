@@ -6,8 +6,7 @@ using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.WindowsServices;
+using Microsoft.Extensions.Hosting;
 
 namespace Host
 {
@@ -17,7 +16,7 @@ namespace Host
         {
             Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(Program).GetTypeInfo().Assembly.ManifestModule.FullyQualifiedName));
 
-            BuildWebHost(args).RunAsService();
+            CreateHostBuilder(args).UseWindowsService().Build().Run();
         }
     }
 }

@@ -13,18 +13,23 @@ namespace Host
 {
     public partial class Program
     {
-        static IWebHost BuildWebHost(string[] args)
+        static IHostBuilder CreateHostBuilder(string[] args)
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            return WebHost.CreateDefaultBuilder(args)
-                .UseKestrel()
-                .UseConfiguration(config)
-                .UseStartup<Startup>()
-                .UseUrls(config["use-urls"])
-                .Build();
+            return Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((ctx, builder) =>
+                {
+                    ctx.Configuration = config;
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseKestrel()
+                        .UseStartup<Startup>()
+                        .UseUrls(config["use-urls"]);
+                });
         }
     }
 }

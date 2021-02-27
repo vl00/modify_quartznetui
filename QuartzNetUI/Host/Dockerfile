@@ -1,19 +1,20 @@
-#»ù´¡¾µÏñ£¨ÓÃÀ´¹¹½¨¾µÏñ£©
-FROM microsoft/dotnet:2.2-aspnetcore-runtime AS base
+
+#åŸºç¡€é•œåƒï¼ˆç”¨æ¥æ„å»ºé•œåƒï¼‰
+FROM mcr.microsoft.com/dotnet/aspnet:3.1-alpine AS base
 WORKDIR /app
 EXPOSE 80
-ENV TZ=Asia/Shanghai
+RUN apk add -U tzdata
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /usr/share/zoneinfo/Asia/Beijing
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-#±àÒë£¨ÁÙÊ±¾µÏñ£¬Ö÷ÒªÓÃÀ´±àÒë·¢²¼ÏîÄ¿£©
-FROM microsoft/dotnet:2.2-sdk AS publish
+#ç¼–è¯‘ï¼ˆä¸´æ—¶é•œåƒï¼Œä¸»è¦ç”¨æ¥ç¼–è¯‘å‘å¸ƒé¡¹ç›®ï¼‰
+FROM mcr.microsoft.com/dotnet/sdk:3.1-alpine AS publish
 WORKDIR /src
 COPY . .
 WORKDIR /src/Host
 RUN dotnet publish -c Release -o /app
 
-#¹¹½¨¾µÏñ
+#æ„å»ºé•œåƒ
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
