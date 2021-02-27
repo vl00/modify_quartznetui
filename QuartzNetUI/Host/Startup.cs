@@ -6,14 +6,14 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-//using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
@@ -36,19 +36,21 @@ namespace Host
             LogConfig();
 
             #region 跨域     
-#if DEBUG
             services.AddCors(options =>
-               options.AddPolicy("AllowSameDomain",
-                    builder => builder.WithOrigins("https://*", "http://*")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowAnyOrigin()    //允许任何来源的主机访问
-                    //.AllowCredentials()  //指定处理cookie
-                )
-           );
-#else
-            services.AddCors(options => options.AddPolicy("AllowSameDomain", builder => { }));
-#endif
+            {
+                options.AddPolicy("AllowSameDomain", policyBuilder =>
+                {
+                    policyBuilder
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+
+                    var allowedHosts = Configuration.GetSection("AllowedHosts").Get<List<string>>();
+                    if (allowedHosts?.Any(t => t == "*") ?? false)
+                        policyBuilder.AllowAnyOrigin(); //允许任何来源的主机访问
+                    else if (allowedHosts?.Any() ?? false)
+                        policyBuilder.AllowCredentials().WithOrigins(allowedHosts.ToArray()); //允许类似http://localhost:8080等主机访问
+                });
+            });
             #endregion
 
             services.AddHttpClient(string.Empty, (sp, http) =>
@@ -65,12 +67,16 @@ namespace Host
 
             services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(@"DataProtection-Keys"));
-
-            services.AddMvc();
+            
+            services.AddControllersWithViews(t =>
+            {
+                //t.Filters.Add<AuthorizationFilter>();
+            })
+            .AddNewtonsoftJson();
 
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new Info
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "MsSystem API"
@@ -85,7 +91,7 @@ namespace Host
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
             applicationLifetime.ApplicationStarted.Register(o =>
             {
@@ -115,7 +121,6 @@ namespace Host
                 }
             });
 
-            app.UseMvcWithDefaultRoute();
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
@@ -123,6 +128,15 @@ namespace Host
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "MsSystem API V1");
+            });
+
+            app.UseRouting();
+            // https://docs.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-3.0
+            app.UseCors("AllowSameDomain");
+            //app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
             });
         }
 
@@ -152,6 +166,8 @@ namespace Host
             //Serilog.Extensions.Logging
             //Serilog.Sinks.RollingFile
             //Serilog.Sinks.Async
+            var fileSize = 1024 * 1024 * 10;//10M
+            var fileCount = 2;
             Log.Logger = new LoggerConfiguration()
                                  .Enrich.FromLogContext()
                                  .MinimumLevel.Debug()
@@ -160,31 +176,31 @@ namespace Host
                                  .WriteTo.Logger(lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Debug).WriteTo.Async(
                                      a =>
                                      {
-                                         a.RollingFile("File/logs/log-{Date}-Debug.txt");
+                                         a.RollingFile("File/logs/log-{Date}-Debug.txt", fileSizeLimitBytes: fileSize, retainedFileCountLimit: fileCount);
                                      }
                                  ))
                                  .WriteTo.Logger(lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Information).WriteTo.Async(
                                      a =>
                                      {
-                                         a.RollingFile("File/logs/log-{Date}-Information.txt");
+                                         a.RollingFile("File/logs/log-{Date}-Information.txt", fileSizeLimitBytes: fileSize, retainedFileCountLimit: fileCount);
                                      }
                                  ))
                                  .WriteTo.Logger(lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Warning).WriteTo.Async(
                                      a =>
                                      {
-                                         a.RollingFile("File/logs/log-{Date}-Warning.txt");
+                                         a.RollingFile("File/logs/log-{Date}-Warning.txt", fileSizeLimitBytes: fileSize, retainedFileCountLimit: fileCount);
                                      }
                                  ))
                                  .WriteTo.Logger(lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Error).WriteTo.Async(
                                      a =>
                                      {
-                                         a.RollingFile("File/logs/log-{Date}-Error.txt");
+                                         a.RollingFile("File/logs/log-{Date}-Error.txt", fileSizeLimitBytes: fileSize, retainedFileCountLimit: fileCount);
                                      }
                                  ))
                                  .WriteTo.Logger(lg => lg.Filter.ByIncludingOnly(p => p.Level == LogEventLevel.Fatal).WriteTo.Async(
                                      a =>
                                      {
-                                         a.RollingFile("File/logs/log-{Date}-Fatal.txt");
+                                         a.RollingFile("File/logs/log-{Date}-Fatal.txt", fileSizeLimitBytes: fileSize, retainedFileCountLimit: fileCount);
 
                                      }
                                  ))
@@ -192,7 +208,7 @@ namespace Host
                                  .WriteTo.Logger(lg => lg.Filter.ByIncludingOnly(p => true)).WriteTo.Async(
                                      a =>
                                      {
-                                         a.RollingFile("File/logs/log-{Date}-All.txt");
+                                         a.RollingFile("File/logs/log-{Date}-All.txt", fileSizeLimitBytes: fileSize, retainedFileCountLimit: fileCount);
                                      }
                                  )
                                 .CreateLogger();

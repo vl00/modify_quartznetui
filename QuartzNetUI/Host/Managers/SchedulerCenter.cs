@@ -57,7 +57,7 @@ namespace Host
                     using (var connection = new SqliteConnection("Data Source=File/sqliteScheduler.db"))
                     {
                         connection.OpenAsync().Wait();
-                        string sql = File.ReadAllTextAsync("tables_sqlite.sql").Result;
+                        string sql = File.ReadAllTextAsync("Tables/tables_sqlite.sql").Result;
                         var command = new SqliteCommand(sql, connection);
                         command.ExecuteNonQuery();
                         connection.Close();
@@ -114,7 +114,7 @@ namespace Host
                     { Constant.MAILMESSAGE, ((int)entity.MailMessage).ToString()},
                 };
                 // 定义这个工作，并将其绑定到我们的IJob实现类                
-                IJobDetail job = JobBuilder.CreateForAsync<HttpJob>()
+                IJobDetail job = JobBuilder.Create<HttpJob>()
                     .SetJobData(new JobDataMap(httpDir))
                     .WithDescription(entity.Description)
                     .WithIdentity(entity.JobName, entity.JobGroup)
@@ -253,8 +253,7 @@ namespace Host
         /// <summary>
         /// 立即执行
         /// </summary>
-        /// <param name="jobGroup"></param>
-        /// <param name="jobName"></param>
+        /// <param name="jobKey"></param>
         /// <returns></returns>
         public async Task<bool> TriggerJobAsync(JobKey jobKey)
         {
@@ -441,26 +440,26 @@ namespace Host
             if (entity.RunTimes.HasValue && entity.RunTimes > 0)
             {
                 return TriggerBuilder.Create()
-               .WithIdentity(entity.JobName, entity.JobGroup)
-               .StartAt(entity.BeginTime)//开始时间
-               .EndAt(entity.EndTime)//结束数据
-               .WithSimpleSchedule(x => x
-                   .WithIntervalInSeconds(entity.IntervalSecond.Value)//执行时间间隔，单位秒
-                   .WithRepeatCount(entity.RunTimes.Value))//执行次数、默认从0开始
-                   .ForJob(entity.JobName, entity.JobGroup)//作业名称
-               .Build();
+                   .WithIdentity(entity.JobName, entity.JobGroup)
+                   .StartAt(entity.BeginTime)//开始时间
+                   .EndAt(entity.EndTime)//结束数据
+                   .WithSimpleSchedule(x => x
+                       .WithIntervalInSeconds(entity.IntervalSecond.Value)//执行时间间隔，单位秒
+                       .WithRepeatCount(entity.RunTimes.Value))//执行次数、默认从0开始
+                       .ForJob(entity.JobName, entity.JobGroup)//作业名称
+                   .Build();
             }
             else
             {
                 return TriggerBuilder.Create()
-               .WithIdentity(entity.JobName, entity.JobGroup)
-               .StartAt(entity.BeginTime)//开始时间
-               .EndAt(entity.EndTime)//结束数据
-               .WithSimpleSchedule(x => x
-                   .WithIntervalInSeconds(entity.IntervalSecond.Value)//执行时间间隔，单位秒
-                   .RepeatForever())//无限循环
-                   .ForJob(entity.JobName, entity.JobGroup)//作业名称
-               .Build();
+                   .WithIdentity(entity.JobName, entity.JobGroup)
+                   .StartAt(entity.BeginTime)//开始时间
+                   .EndAt(entity.EndTime)//结束数据
+                   .WithSimpleSchedule(x => x
+                       .WithIntervalInSeconds(entity.IntervalSecond.Value)//执行时间间隔，单位秒
+                       .RepeatForever())//无限循环
+                       .ForJob(entity.JobName, entity.JobGroup)//作业名称
+                   .Build();
             }
 
         }
@@ -474,12 +473,12 @@ namespace Host
         {
             // 作业触发器
             return TriggerBuilder.Create()
-                   .WithIdentity(entity.JobName, entity.JobGroup)
-                   .StartAt(entity.BeginTime)//开始时间
-                   .EndAt(entity.EndTime)//结束时间
-                   .WithCronSchedule(entity.Cron)//指定cron表达式
-                   .ForJob(entity.JobName, entity.JobGroup)//作业名称
-                   .Build();
+                .WithIdentity(entity.JobName, entity.JobGroup)
+                .StartAt(entity.BeginTime)//开始时间
+                .EndAt(entity.EndTime)//结束时间
+                .WithCronSchedule(entity.Cron)//指定cron表达式
+                .ForJob(entity.JobName, entity.JobGroup)//作业名称
+                .Build();
         }
 
     }
