@@ -79,7 +79,7 @@ namespace Host
                     ObjectSerializer = serializer
                 };
                 DirectSchedulerFactory.Instance.CreateScheduler("benny" + "Scheduler", "AUTO", new DefaultThreadPool(), jobStore);
-                _scheduler = SchedulerRepository.Instance.Lookup("benny" + "Scheduler").Result;
+                _scheduler = SchedulerRepository.Instance.Lookup("benny" + "Scheduler");
 
                 _scheduler.Start();//默认开始调度器
                 return _scheduler;
@@ -305,7 +305,7 @@ namespace Host
                         jobInfo.JobInfoList.Add(new JobInfo()
                         {
                             Name = jobKey.Name,
-                            LastErrMsg = jobDetail.JobDataMap.GetString(Constant.EXCEPTION),
+                            LastErrMsg = jobDetail.JobDataMap.TryGetString(Constant.EXCEPTION, out var err) ? err : null,
                             RequestUrl = jobDetail.JobDataMap.GetString(Constant.REQUESTURL),
                             TriggerState = await Scheduler.GetTriggerState(triggers.Key),
                             PreviousFireTime = triggers.GetPreviousFireTimeUtc()?.LocalDateTime,
@@ -387,7 +387,7 @@ namespace Host
                         jobInfo.JobInfoList.Add(new JobBriefInfo()
                         {
                             Name = jobKey.Name,
-                            LastErrMsg = jobDetail.JobDataMap.GetString(Constant.EXCEPTION),
+                            LastErrMsg = jobDetail.JobDataMap.TryGetString(Constant.EXCEPTION, out var err) ? err : null,
                             TriggerState = await Scheduler.GetTriggerState(triggers.Key),
                             PreviousFireTime = triggers.GetPreviousFireTimeUtc()?.LocalDateTime,
                             NextFireTime = triggers.GetNextFireTimeUtc()?.LocalDateTime,
